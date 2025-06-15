@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Input } from './components/ui/input'
 import { Progress } from './components/ui/progress'
+import { toast } from 'sonner'
+import { ArrowBigLeft } from 'lucide-react'
 
 const App = () => {
   const [gameStart, setGameStart] = useState(false)
@@ -19,12 +21,12 @@ const App = () => {
   ])
 
   const checkWordInListOfWords = () => {
-    if (!wordGuess.trim()) return;
+    if (!wordGuess.trim()) return toast("Oops! Please enter a word before guessing.");
 
     const found = words.find(
       (w) => w.word.toLowerCase() === wordGuess.toLowerCase()
     )
-    if (!found) return
+    if (!found) return toast("Nice try, but that’s not one of the words. Keep guessing!")
 
     const updated = words.map((w) =>
       w.word === found.word ? { ...w, status: 'completed' } : w
@@ -36,11 +38,15 @@ const App = () => {
     setProgressStatus(newProgress)
 
     setWordGuess("")
+
+    return toast("Great job! You found a correct word!")
   }
 
   return (
     
-      gameStart ? <div className="min-h-screen bg-gray-800 text-gray-200 flex flex-col space-y-6 max-w-2xl mx-auto py-12 px-4">
+      gameStart ? 
+      <div className="min-h-screen relative bg-gray-800 text-gray-200 flex flex-col space-y-6 max-w-2xl mx-auto py-12 px-4">
+        <ArrowBigLeft onClick={() => setGameStart(false)} className='absolute top-5 left-5 size-12 cursor-pointer' />
       <h1 className="text-4xl font-bold text-center">Word Seeker</h1>
       <p className="text-gray-400 text-center">
         Seek and find all hidden words using the given letters
