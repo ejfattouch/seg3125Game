@@ -203,7 +203,7 @@ const Game = ({ setGameStart, charList, wordList }) => {
 
       <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6">
         <h2 className="text-lg text-center font-semibold mb-4">Words to Seek</h2>
-        <div className="grid grid-cols-4 gap-4 font-mono select-none">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 font-mono select-none">
           {words.map((wordObj, i) =>
             wordObj.status === "missing" || wordObj.status === "revealed" ? (
               <div
