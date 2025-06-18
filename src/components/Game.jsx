@@ -146,7 +146,7 @@ const Game = ({ setGameStart, charList, wordList }) => {
             {wordLetters.map((ltr) => (
               <span
                 key={ltr}
-                className="bg-gray-600 text-gray-100 font-bold text-2xl py-2 px-4 rounded-md"
+                className="bg-gray-600 text-gray-100 font-bold text-sm md:text-lg lg:text-2xl py-2 px-4 rounded-md"
               >
                 {ltr}
               </span>
@@ -183,7 +183,7 @@ const Game = ({ setGameStart, charList, wordList }) => {
         <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6 text-center">
           <h2 className="text-xl font-semibold mb-4">Words Found</h2>
           {words
-            .sort((a, b) => a.word.localeCompare(b.word))
+            .sort((a, b) => a.word.length - b.word.length)
             .filter((w) => w.status === "completed").length > 0 ? (
             <div className="flex flex-wrap justify-center gap-2">
               {words
