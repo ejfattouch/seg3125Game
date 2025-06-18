@@ -3,6 +3,17 @@ import { Input } from "./ui/input.jsx";
 import { Progress } from "./ui/progress.jsx";
 import { ArrowLeftFromLine } from "lucide-react";
 import { cn } from "@/lib/utils.js";
+
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
+import { useWindowSize } from 'react-use'
 import Confetti from "react-confetti";
 
 const Game = ({ setGameStart, charList, wordList }) => {
@@ -12,6 +23,8 @@ const Game = ({ setGameStart, charList, wordList }) => {
   const [words, setWords] = useState(wordList);
   const [isShaking, setIsShaking] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false); // New state for dialog
+  const [hasGivenUp, setHasGivenUp] = useState(false); // New state
 
   const shakeInput = () => {
     setIsShaking(true);
@@ -55,18 +68,42 @@ const Game = ({ setGameStart, charList, wordList }) => {
 
   useEffect(() => {
     if (progressStatus >= 100) {
-      alert("Congratulations! You've found all the words!");
-      setGameStart(false);
-
-      return;
+      if (progressStatus === 100) {
+        setShowCongratulations(true);
+      }
     }
   }, [progressStatus]);
 
+  // Function to handle closing dialog and potentially resetting game
+  const handleCloseCongratulations = () => {
+    setShowCongratulations(false);
+    setGameStart(false); // Go back to game launcher, or reset game state
+  };
+
+  const { width, height } = useWindowSize()
+
+  const handleGiveUp = () => {
+    setHasGivenUp(true);
+
+    const updatedWordsOnGiveUp = words.map(wordObj => {
+      if (wordObj.status === 'missing') {
+        return { ...wordObj, status: 'revealed' }; // New status
+      }
+      return wordObj;
+    });
+    setWords(updatedWordsOnGiveUp);
+  };
+
   return (
-    <div className="min-h-screen relative bg-gray-800 text-gray-200 flex flex-col space-y-6 max-w-5xl mx-auto mb-10 py-12 px-4">
+    <>
+      {/* Confetti effect when congratulations dialog is open */}
+    {showCongratulations && <Confetti width={width} height={height} />}
+
+    <div className={cn("min-h-screen relative bg-gray-800 text-gray-200 flex flex-col space-y-6 max-w-5xl mx-auto mb-10 py-12 px-4",
+                        hasGivenUp ? "opacity-80": "")}>
       <ArrowLeftFromLine
         onClick={() => setGameStart(false)}
-        className="absolute top-13 left-5 size-10 cursor-pointer"
+        className={"absolute top-13 left-5 size-10 cursor-pointer"}
       />
       <h1 className="text-4xl font-bold text-center">Word Seeker</h1>
       <p className="text-gray-400 text-center">
@@ -88,6 +125,13 @@ const Game = ({ setGameStart, charList, wordList }) => {
               0
             )}{" "}
         </div>
+        <button
+            onClick={handleGiveUp}
+            disabled={progressStatus === 100 || hasGivenUp}
+            className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full cursor-pointer disabled:cursor-default disabled:bg-orange-50/30 disabled:text-white/50"
+        >
+          Give Up
+        </button>
       </div>
 
       <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6">
@@ -111,6 +155,7 @@ const Game = ({ setGameStart, charList, wordList }) => {
           type="text"
           placeholder="Type your word here..."
           value={wordGuess}
+          disabled={hasGivenUp || progressStatus >= 100}
           onKeyDown={(e) => {
             if (e.key === "Enter") checkWordInListOfWords();
           }}
@@ -123,7 +168,9 @@ const Game = ({ setGameStart, charList, wordList }) => {
         />
         <button
           onClick={checkWordInListOfWords}
-          className="w-full cursor-pointer text-center py-2 rounded-md font-bold bg-gray-100 text-gray-800 hover:bg-gray-200 transition"
+          className="w-full cursor-pointer text-center py-2 rounded-md font-bold bg-gray-100 text-gray-800 hover:bg-gray-200 transition
+                      disabled:cursor-default disabled:bg-gray-50/30 disabled:text-white/50"
+          disabled={hasGivenUp || progressStatus >= 100}
         >
           Seek Word
         </button>
@@ -155,23 +202,28 @@ const Game = ({ setGameStart, charList, wordList }) => {
       </section>
 
       <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6">
-        <h2 className="text-lg font-semibold mb-4">Words to Seek</h2>
+        <h2 className="text-lg text-center font-semibold mb-4">Words to Seek</h2>
         <div className="grid grid-cols-4 gap-4 font-mono select-none">
           {words.map((wordObj, i) =>
-            wordObj.status === "missing" ? (
+            wordObj.status === "missing" || wordObj.status === "revealed" ? (
               <div
                 key={i}
                 className="bg-gray-600 rounded-md px-6 py-8 flex flex-wrap gap-2 lg:gap-0 items-center justify-center"
               >
                 {wordObj.word.split("").map((char, i) => (
-                  <span className=" border w-6 h-6 text-center mx-1 bg-gray-500">
-                    ?
+                  <span className={cn("border w-6 h-6 text-center mx-1",
+                                        hasGivenUp ? "bg-gray-900 text-white" : "bg-gray-500")}>
+                    {wordObj.status === "missing" ? "?" : char}
                   </span>
                 ))}
               </div>
             ) : null
           )}
+
         </div>
+        { words.every((w) => w.status === "completed") &&
+            <p className="text-gray-400 text-center">Congratulations, you have found every word! <br/> There are no more left to find.</p>
+        }
       </section>
 
       <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6">
@@ -184,7 +236,36 @@ const Game = ({ setGameStart, charList, wordList }) => {
           className="w-full bg-gray-600 border border-gray-500 rounded-full [&>*]:bg-gray-100"
         />
       </section>
+
+      {/* Shadcn Congratulation Dialog */}
+      <Dialog open={showCongratulations} onOpenChange={setShowCongratulations}>
+        <DialogContent className="sm:max-w-[600px] bg-gray-800 text-white border-white">
+          <DialogHeader>
+            <DialogTitle className="text-3xl text-green-600 text-center">🎉 Congratulations! 🎉</DialogTitle>
+            <DialogDescription className="text-lg mt-2 text-center">
+              You found all the words!
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 text-center">
+            <p className="text-xl font-bold">Your Final Score: {words.filter((w) => w.status === "completed")
+                  .reduce(
+                      (totalScore, wordObject) =>
+                          totalScore + wordObject.word.length * 10,
+                      0
+                  )}{" "}</p>
+          </div>
+          <DialogFooter>
+            <button
+                onClick={handleCloseCongratulations}
+                className="w-full cursor-pointer text-center py-2 rounded-md font-bold bg-green-600 text-white hover:bg-green-700 transition"
+            >
+              Play Again!
+            </button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
+  </>
   );
 };
 
