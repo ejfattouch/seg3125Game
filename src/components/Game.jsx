@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Input } from './ui/input.jsx'
 import { Progress } from './ui/progress.jsx'
 import { toast } from 'sonner'
-import { ArrowBigLeft } from 'lucide-react'
+import { ArrowLeftFromLine } from 'lucide-react'
 
 const Game = ({setGameStart, charList, wordList}) => {
       const [progressStatus, setProgressStatus] = useState(0)
@@ -32,8 +32,8 @@ const Game = ({setGameStart, charList, wordList}) => {
         return toast("Great job! You found a correct word!")
       }
   return (
-    <div className="min-h-screen relative bg-gray-800 text-gray-200 flex flex-col space-y-6 max-w-2xl mx-auto py-12 px-4">
-            <ArrowBigLeft onClick={() => setGameStart(false)} className='absolute top-5 left-5 size-12 cursor-pointer' />
+    <div className="min-h-screen relative bg-gray-800 text-gray-200 flex flex-col space-y-6 max-w-5xl mx-auto mb-10 py-12 px-4">
+          <ArrowLeftFromLine onClick={() => setGameStart(false)} className='absolute top-13 left-5 size-10 cursor-pointer' />
           <h1 className="text-4xl font-bold text-center">Word Seeker</h1>
           <p className="text-gray-400 text-center">
             Seek and find all hidden words using the given letters
@@ -44,8 +44,10 @@ const Game = ({setGameStart, charList, wordList}) => {
               Words Found: {words.filter((w) => w.status === 'completed').length}/{words.length}
             </div>
             <div className="bg-purple-700/30 text-purple-300 font-bold py-2 px-4 rounded-full">
-              Seeker Score: {words.filter((w) => w.status === 'completed').length * 10}
-            </div>
+                Seeker Score: {
+                words.filter((w) => w.status === 'completed')
+                    .reduce((totalScore, wordObject) => totalScore + (wordObject.word.length * 10), 0)
+            }            </div>
           </div>
     
           <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6">
@@ -70,8 +72,8 @@ const Game = ({setGameStart, charList, wordList}) => {
               onKeyDown={(e) => {
                 if (e.key === "Enter") checkWordInListOfWords();
               }}
-              onChange={(e) => setWordGuess(e.target.value)}
-              className="bg-gray-600 text-gray-100 border border-gray-500 rounded-md py-2 px-3 w-full placeholder-gray-400"
+              onChange={(e) => setWordGuess(e.target.value.toUpperCase())}
+              className="bg-gray-600 text-gray-100 border border-gray-500 !text-xl font-mono rounded-md py-6 px-4 w-full placeholder-gray-400 text-center"
             />
             <button
               onClick={checkWordInListOfWords}
@@ -106,19 +108,16 @@ const Game = ({setGameStart, charList, wordList}) => {
     
           <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6">
             <h2 className="text-lg font-semibold mb-4">Words to Seek</h2>
-            <div className="grid grid-cols-4 gap-4">
-              {words.map((wordObj, i) => (
+            <div className="grid grid-cols-4 gap-4 font-mono">
+              {words.map((wordObj, i) =>
+                  wordObj.status === 'missing' ? (
                 <div
                   key={i}
-                  className="bg-gray-600 rounded-md py-8 flex items-center justify-center"
+                  className="bg-gray-600 rounded-md px-6 py-8 flex items-center justify-center"
                 >
-                  {wordObj.status === 'missing' ? (
-                    <span className="text-gray-500">?</span>
-                  ) : (
-                    <span className="text-gray-100 font-bold">{wordObj.word}</span>
-                  )}
+                    {wordObj.word.split("").map((char, i) => (<span className=" border w-6 h-6 text-center mx-1 bg-gray-500">?</span>))}
                 </div>
-              ))}
+              ) : null )}
             </div>
           </section>
     
