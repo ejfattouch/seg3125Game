@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
-import { Input } from './components/ui/input'
-import { Progress } from './components/ui/progress'
+import { Input } from './ui/input.jsx'
+import { Progress } from './ui/progress.jsx'
 import { toast } from 'sonner'
 import { ArrowBigLeft } from 'lucide-react'
 
