@@ -1,23 +1,41 @@
 import React, { useState } from 'react'
 import { Input } from './ui/input.jsx'
 import { Progress } from './ui/progress.jsx'
-import { toast } from 'sonner'
 import { ArrowLeftFromLine } from 'lucide-react'
+import {cn} from "@/lib/utils.js";
 
 const Game = ({setGameStart, charList, wordList}) => {
       const [progressStatus, setProgressStatus] = useState(0)
       const [wordGuess, setWordGuess] = useState("")
       const [wordLetters, setWordLetters] = useState(charList)
       const [words, setWords] = useState(wordList)
-    
-      const checkWordInListOfWords = () => {
-        if (!wordGuess.trim()) return toast("Oops! Please enter a word before guessing.");
+      const [isShaking, setIsShaking] = useState(false);
+      const [isCorrect, setIsCorrect] = useState(false);
+
+      const shakeInput = () => {
+          setIsShaking(true);
+          // Stop shaking after a short delay (e.g., 500ms, matching animation duration)
+          setTimeout(() => {
+              setIsShaking(false);
+              setWordGuess("")
+          }, 500); // Adjust this duration to match your animation
+      }
+
+      const setCorrectInput = () => {
+          setIsCorrect(true);
+          setTimeout(() => {
+              setIsCorrect(false);
+          }, 500)
+      }
+
+    const checkWordInListOfWords = () => {
+        if (!wordGuess.trim()) return shakeInput();
     
         const found = words.find(
           (w) => w.word.toLowerCase() === wordGuess.toLowerCase()
         )
-        if (!found) return toast("Nice try, but that’s not one of the words. Keep guessing!")
-    
+        if (!found || found.status === 'completed') return shakeInput();
+
         const updated = words.map((w) =>
           w.word === found.word ? { ...w, status: 'completed' } : w
         )
@@ -29,7 +47,7 @@ const Game = ({setGameStart, charList, wordList}) => {
     
         setWordGuess("")
     
-        return toast("Great job! You found a correct word!")
+        return setCorrectInput();
       }
   return (
     <div className="min-h-screen relative bg-gray-800 text-gray-200 flex flex-col space-y-6 max-w-5xl mx-auto mb-10 py-12 px-4">
@@ -73,7 +91,11 @@ const Game = ({setGameStart, charList, wordList}) => {
                 if (e.key === "Enter") checkWordInListOfWords();
               }}
               onChange={(e) => setWordGuess(e.target.value.toUpperCase())}
-              className="bg-gray-600 text-gray-100 border border-gray-500 !text-xl font-mono rounded-md py-6 px-4 w-full placeholder-gray-400 text-center"
+              className={cn(
+                  "bg-gray-600 text-gray-100 border border-gray-500 rounded-md w-full placeholder-gray-400 text-center py-4 px-6 text-xl lg:text-2xl",
+                        isShaking ? "animate-shake border-red-500" : "",
+                        isCorrect ? "border-green-500" : ""
+                  )}
             />
             <button
               onClick={checkWordInListOfWords}
@@ -85,7 +107,7 @@ const Game = ({setGameStart, charList, wordList}) => {
     
           <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6 text-center">
             <h2 className="text-xl font-semibold mb-4">Words Found</h2>
-            {words.filter((w) => w.status === 'completed').length > 0 ? (
+            {words.sort((a, b) => a.word.localeCompare(b.word)).filter((w) => w.status === 'completed').length > 0 ? (
               <div className="flex flex-wrap justify-center gap-2">
                 {words
                   .filter((w) => w.status === 'completed')
@@ -108,7 +130,7 @@ const Game = ({setGameStart, charList, wordList}) => {
     
           <section className="bg-gray-700 border border-gray-600 rounded-xl shadow-md p-6">
             <h2 className="text-lg font-semibold mb-4">Words to Seek</h2>
-            <div className="grid grid-cols-4 gap-4 font-mono">
+            <div className="grid grid-cols-4 gap-4 font-mono select-none">
               {words.map((wordObj, i) =>
                   wordObj.status === 'missing' ? (
                 <div

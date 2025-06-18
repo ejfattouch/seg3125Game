@@ -91,7 +91,7 @@ const GameLauncher = () => {
                             <Card
                                 key={index}
                                 onClick={(e) => {handleGameSelect(e, index)}}
-                                className={cn(selectedDifficulty[index]? "border-primary-purple" : "border-gray-600", "bg-gray-700 border  rounded-xl shadow-md")}
+                                className={cn(selectedDifficulty[index]? "border-primary-purple" : "border-gray-600", "bg-gray-700 border cursor-pointer rounded-xl shadow-md")}
                             >
                                 <CardHeader className={"select-none"}>
                                     <CardTitle>{data_set.title}</CardTitle>
