@@ -82,10 +82,10 @@ const GameLauncher = () => {
     setGameStart(true);
   };
 
-  return gameStart ?
-      (<Game setGameStart={setGameStart} charList={charList} wordList={wordList} />)
-      :
-    (<div className="min-h-screen text-center text-white flex flex-col gap-4 space-y-6 mx-4 py-12 px-4 sm:px-0">
+  return gameStart ? (
+    <Game setGameStart={setGameStart} charList={charList} wordList={wordList} />
+  ) : (
+    <div className="min-h-screen text-center text-white flex flex-col gap-4 space-y-6 mx-4 py-12 px-4 sm:px-0">
       <div className="flex flex-col gap-4">
         <h1 className={"text-4xl font-bold"}>🔍 Word Seeker</h1>
         <p className={"text-lg max-w-xl mx-auto"}>
@@ -96,7 +96,7 @@ const GameLauncher = () => {
       <div>
         <h1 className={"text-2xl font-bold"}>Choose Your Challenge</h1>
 
-        <div className="max-w-[2000px] mx-auto grid grid-cols-1 gap-10 px-50 md:px-10 lg:px-10 xl:px-50 lg:grid-cols-3 mt-6 mb-10 lg:mb-20">
+        <div className="mx-auto grid grid-cols-1 gap-10  md:px-10 lg:px-10 xl:px-50 lg:grid-cols-3 mt-6 mb-10 lg:mb-20">
           {dataArray.map((data_set, index) => (
             <Card
               key={index}
